@@ -12,6 +12,7 @@ namespace Data.Repositories
     public interface IUserRepository
     {
         Task<IEnumerable<User>> GetAllAsync();
+        Task<(List<User> users, int totalCount)> GetPaginatedAsync(int page, int limit);
         Task<User> GetByIDAsync(int id);
         Task<User> GetByEmailAsync(string email);
         Task AddAsync(User user);
@@ -31,6 +32,20 @@ namespace Data.Repositories
             return await _context.Users
                 .Include(u => u.Addresses)
                 .ToListAsync();
+        }
+
+        public async Task<(List<User> users, int totalCount)> GetPaginatedAsync(int page, int limit)
+        {
+            var query = _context.Users.AsQueryable();
+
+            int totalCount = await query.CountAsync();
+
+            var users = await query
+                .Skip((page-1)*limit)
+                .Take(limit)
+                .ToListAsync();
+
+            return (users, totalCount);
         }
 
         public async Task<User> GetByIDAsync(int id)
@@ -70,6 +85,7 @@ namespace Data.Repositories
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
         }
+
     }
 }
 

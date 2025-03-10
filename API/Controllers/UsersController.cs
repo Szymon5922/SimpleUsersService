@@ -26,9 +26,7 @@ namespace API.Controllers
             if (page < 1 || limit < 1)
                 return BadRequest("Page and limit must be greater than 0.");
 
-            var users = await _service.GetAllAsync();
-            var totalUsers = users.Count();
-            var paginatedUsers = users.Skip((page - 1) * limit).Take(limit).ToList();
+            var (users, totalUsers) = await _service.GetPaginatedAsync(page, limit);
 
             var response = new
             {
@@ -36,7 +34,7 @@ namespace API.Controllers
                 TotalPages = (int)Math.Ceiling((double)totalUsers / limit),
                 CurrentPage = page,
                 PageSize = limit,
-                Users = paginatedUsers
+                Users = users
             };
 
             return Ok(response);
