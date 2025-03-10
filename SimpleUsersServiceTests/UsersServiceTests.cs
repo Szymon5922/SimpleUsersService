@@ -74,6 +74,29 @@ namespace SimpleUsersService
         }
 
         [Fact]
+        public async Task GetPaginatedAsync_ValidPageAndLimit_ReturnsPaginatedUsers()
+        {
+            var page = 1;
+            var limit = 10;
+            var users = new List<User>
+            {
+                new User { Id = 1, FirstName = "John" },
+                new User { Id = 2, FirstName = "Jane" }
+            };
+            var userDtos = users.Select(u => new UserDto { Id = u.Id, FirstName = u.FirstName }).ToList();
+
+            _userRepositoryMock.Setup(repo => repo.GetPaginatedAsync(page, limit))
+                .ReturnsAsync((users, users.Count));
+
+            _mapperMock.Setup(mapper => mapper.Map<IEnumerable<UserDto>>(users)).Returns(userDtos);
+
+            var (resultUsers, totalCount) = await _usersService.GetPaginatedAsync(page, limit);
+
+            resultUsers.Should().BeEquivalentTo(userDtos);
+            totalCount.Should().Be(users.Count);
+        }
+
+        [Fact]
         public async Task AddAsync_ValidUser_ReturnsUserId()
         {
             var userDto = new ManipulateUserDto { Email = "valid@test.com" };

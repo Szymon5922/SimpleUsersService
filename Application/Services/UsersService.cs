@@ -9,6 +9,7 @@ namespace Application.Services
 {
     public interface IUsersService
     {
+        Task<(IEnumerable<UserDto> users, int totalCount)> GetPaginatedAsync(int page, int limit);
         Task<IEnumerable<UserDto>> GetAllAsync();
         Task<UserDto> GetByIdAsync(int id);
         Task<User> GetByEmailAsync(string email);
@@ -50,6 +51,14 @@ namespace Application.Services
         {
             var users = await _userRepository.GetAllAsync();
             return _mapper.Map<IEnumerable<UserDto>>(users);
+        }
+
+        public async Task<(IEnumerable<UserDto> users, int totalCount)> GetPaginatedAsync(int page, int limit)
+        {
+            var paginationResponse = await _userRepository.GetPaginatedAsync(page, limit);
+            var usersDtos = _mapper.Map<IEnumerable<UserDto>>(paginationResponse.users);
+
+            return (usersDtos, paginationResponse.totalCount);
         }
 
         public async Task<int> AddAsync(ManipulateUserDto userDto)
